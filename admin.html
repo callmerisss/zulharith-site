@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235b4fd6'/%3E%3Cpath d='M20 20h24L20 44h24' fill='none' stroke='white' stroke-width='6.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><title>Admin login</title>
 <style>:root{--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--accent:#5b4fd6;color-scheme:light}
 *{box-sizing:border-box}
@@ -28,10 +29,8 @@ h1{font-size:2.2rem;margin-bottom:6px}.sub{color:var(--muted);margin:0 0 22px}
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-// ===== PASTE YOUR SUPABASE DETAILS HERE =====
 const SUPABASE_URL="https://mesaszwdqcrzlpwnlhzf.supabase.co";
 const SUPABASE_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
-// ============================================
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const msg=document.getElementById("msg");
 sb.auth.getSession().then(({data})=>{if(data.session)location.replace("/adminmain")});
