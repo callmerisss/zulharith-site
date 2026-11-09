@@ -1,1 +1,55 @@
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>File transfer</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.drop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:34px 20px;margin-bottom:12px;border:2px dashed var(--accent);border-radius:24px;background:rgba(255,255,255,.55);cursor:pointer;text-align:center;transition:transform .25s,background .25s}
+.drop:hover,.drop.on{background:var(--lilac);transform:scale(1.02)}
+.drop .big{font-size:2.6rem;transition:transform .3s}.drop:hover .big,.drop.on .big{transform:translateY(-6px)}
+.file{display:flex;align-items:center;gap:14px}.file .i{font-size:1.8rem}.file .n{flex:1;min-width:0}
+.file b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file small{color:var(--muted)}
+</style></head>
+<body data-title="File transfer">
+<div class="wrap" id="m" hidden><div class="top" id="bar"></div>
+  <label class="drop" id="dz"><span class="big">📤</span><b>Drop files here</b><span class="muted">or tap to choose · up to 10 MB each</span><input id="f" type="file" multiple hidden></label>
+  <p class="muted" id="st"></p><div id="list"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="common.js"></script>
+<script>
+boot(()=>{
+let rows=[];
+const ico=n=>{const e=n.split(".").pop().toLowerCase();return /^(png|jpe?g|gif|webp|svg)$/.test(e)?"🖼️":e==="pdf"?"📕":/^(zip|rar|7z)$/.test(e)?"🗜️":/^(mp3|wav|m4a)$/.test(e)?"🎵":/^(mp4|mov|webm)$/.test(e)?"🎬":/^(docx?|txt|md)$/.test(e)?"📄":/^(xlsx?|csv)$/.test(e)?"📊":"📁"};
+async function load(){
+  const {data,error}=await sb.from("files").select("*").eq("kind","file").order("created_at",{ascending:false});
+  if(error){$("list").innerHTML='<div class="card muted">Could not load files.</div>';return}
+  rows=data;
+  $("list").innerHTML=rows.length?rows.map(r=>`<div class="card file"><span class="i">${ico(r.name)}</span><div class="n"><b>${esc(r.name)}</b><small>${fmt(r.size||0)} · ${new Date(r.created_at).toLocaleString()}</small></div><button class="btn sm" data-a="dl" data-id="${esc(r.id)}">Download</button><button class="del" data-a="rm" data-id="${esc(r.id)}">Delete</button></div>`).join(""):'<div class="card muted">No files yet. Drop one above.</div>';
+}
+async function add(list){
+  for(const f of list){
+    if(f.size>10485760){$("st").textContent=f.name+" is over 10 MB.";continue}
+    $("st").textContent="Uploading "+f.name+"…";
+    try{const path=await upload(f);const {error}=await sb.from("files").insert({name:f.name,size:f.size,type:f.type,path,kind:"file"});if(error){await removeFile(path);throw 0}}
+    catch(e){$("st").textContent="Could not upload "+f.name+".";return}
+  }
+  $("st").textContent="Done.";load();
+}
+$("f").onchange=e=>{add([...e.target.files]);e.target.value=""};
+$("dz").ondragover=e=>{e.preventDefault();$("dz").classList.add("on")};
+$("dz").ondragleave=()=>$("dz").classList.remove("on");
+$("dz").ondrop=e=>{e.preventDefault();$("dz").classList.remove("on");add([...e.dataTransfer.files])};
+$("list").onclick=async e=>{
+  const b=e.target.closest("button[data-a]");if(!b)return;
+  const r=rows.find(x=>String(x.id)===b.dataset.id);if(!r)return;
+  if(b.dataset.a==="dl"){
+    b.textContent="…";const u=await blobUrl(r.path);b.textContent="Download";
+    if(!u){alert("Could not get this file.");return}
+    const a=document.createElement("a");a.href=u;a.download=r.name;a.click();
+  }else if(confirm("Delete "+r.name+"?")){
+    const {error}=await sb.from("files").delete().eq("id",r.id);
+    if(error){alert("Could not delete.");return}
+    await removeFile(r.path);load();
+  }
+};
+load();
+});
+</script></body></html>
