@@ -4,22 +4,171 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zulharith</title>
-<meta name="description" content="Zulharith's personal website.">
+<meta name="description" content="Zulharith's portfolio: things I make, and how to reach me.">
+<meta name="theme-color" content="#f6f5ff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f5f1ea;--text:#1e1d1b;--muted:#77736c;--accent:#c4552d}
-@media (prefers-color-scheme:dark){:root{--bg:#171614;--text:#f1eee8;--muted:#9c978d;--accent:#e8714a}}
+:root{--bg:#f6f5ff;--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--accent:#5b4fd6;color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center;padding:24px}
-h1{font-size:2.6rem;margin:0 0 8px}
-p{color:var(--muted);margin:0 0 20px}
-a{color:var(--accent)}
+html{scroll-behavior:smooth}
+body{margin:0;background:#f6f5ff;color:var(--ink);font:17px/1.65 "DM Sans",system-ui,sans-serif;overflow-x:hidden}
+.bgl{position:fixed;inset:0;z-index:-2;opacity:0;transition:opacity 1s ease;pointer-events:none;will-change:opacity}
+.bgl.on{opacity:1}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.05;margin:0;letter-spacing:-.02em}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.blobs{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.blob{position:absolute;border-radius:50%;will-change:transform;transform:translate3d(0,0,0);background:radial-gradient(circle,var(--c) 0%,transparent 68%)}
+.b1{--c:var(--lilac);width:52vmax;height:52vmax;top:-12vmax;left:-10vmax}
+.b2{--c:var(--mint);width:44vmax;height:44vmax;top:45vh;right:-12vmax}
+.b3{--c:var(--peach);width:40vmax;height:40vmax;bottom:-14vmax;left:20vw}
+header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:18px clamp(18px,5vw,56px);z-index:5}
+header a{text-decoration:none;font-weight:500}
+header .logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.2rem}
+header .say{background:var(--ink);color:#fff;padding:8px 18px;border-radius:999px;font-size:15px}
+section{padding:clamp(80px,12vw,150px) clamp(18px,5vw,56px);max-width:1120px;margin:0 auto}
+#top{min-height:100svh;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;padding-top:110px}
+.hi{color:var(--muted);margin:0 0 14px}
+h1{font-size:clamp(3.2rem,10vw,7.4rem);font-weight:700}
+h1 .l{display:inline-block;transform:translateY(110%);opacity:0;animation:rise .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i)*70ms + 150ms)}
+h1 span.wrap{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}
+@keyframes rise{to{transform:none;opacity:1}}
+.tag{font-size:1.25rem;max-width:30ch;margin:22px 0 30px;color:var(--muted)}
+.btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;text-decoration:none;padding:13px 24px;border-radius:999px;font-weight:500;transition:transform .25s}
+.btn:hover{transform:translateY(-3px)}
+.btn.main{background:var(--accent);color:#fff}
+.btn.alt{background:#fff;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.photo{position:relative;justify-self:center;width:min(100%,380px)}
+.photo::before{content:"";position:absolute;inset:18px -18px -18px 18px;background:var(--sky);border-radius:999px 999px 28px 28px}
+.frame{position:relative;transform:translate3d(0,0,0);aspect-ratio:4/5;border-radius:999px 999px 28px 28px;overflow:hidden;background:linear-gradient(160deg,var(--lilac),var(--mint));display:grid;place-items:center;font:700 6rem "Bricolage Grotesque",sans-serif;color:#fff;will-change:transform}
+.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scrollcue{position:absolute;bottom:28px;left:clamp(18px,5vw,56px);color:var(--muted);font-size:14px}
+h2{font-size:clamp(2.2rem,6vw,4rem);margin-bottom:28px}
+.about p{font-size:clamp(1.4rem,3.4vw,2.2rem);line-height:1.45;max-width:28em;font-family:"Bricolage Grotesque",sans-serif;font-weight:500;margin:0}
+.about .w{opacity:.2;transition:opacity .4s}
+.about .w.on{opacity:1}
+.list{border-top:1.5px solid var(--ink)}
+.row{display:grid;grid-template-columns:1.1fr 1fr auto;gap:20px;align-items:center;padding:30px 12px;border-bottom:1.5px solid var(--ink);text-decoration:none;transition:background .3s,padding .3s,transform .8s cubic-bezier(.2,.8,.2,1),opacity .8s;border-radius:6px}
+.row.pre{opacity:0;transform:translateX(-40px)}
+.row:hover{background:var(--c);padding-left:26px}
+.row h3{font-size:clamp(1.5rem,3.4vw,2.3rem)}
+.row p{margin:0;color:var(--muted)}
+.row .k{font-size:14px;background:var(--c);padding:5px 14px;border-radius:999px;white-space:nowrap}
+.links{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px}
+.pill{display:flex;align-items:center;gap:10px;padding:16px 28px;border-radius:999px;background:var(--c);text-decoration:none;font-weight:500;font-size:1.1rem;transition:transform .25s}
+.pill:hover{transform:translateY(-4px) rotate(-1.5deg)}
+footer{text-align:center;color:var(--muted);padding:50px 20px 60px;font-size:15px}
+@media (max-width:760px){
+#top{grid-template-columns:1fr;gap:56px;padding-top:100px}
+.photo{width:min(78%,320px)}
+.row{grid-template-columns:1fr;gap:8px}
+.scrollcue{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+h1 .l{animation:none;transform:none;opacity:1}
+.row.pre{opacity:1;transform:none}
+.about .w{opacity:1}
+}
 </style>
 </head>
 <body>
-<main>
-  <h1>Zulharith</h1>
-  <p>My website is coming soon.</p>
-  <a href="mailto:you@example.com">Say hi</a>
-</main>
+<div class="blobs" aria-hidden="true"><div class="blob b1" data-s=".08"></div><div class="blob b2" data-s="-.12"></div><div class="blob b3" data-s=".05"></div></div>
+
+<header>
+  <a class="logo" href="#top">Z.</a>
+  <a class="say" href="#connect">Say hi</a>
+</header>
+
+<!-- ================= DETAILLLLLLSSSSSSSSSS ================= -->
+<section id="top" data-bg="#f6f5ff">
+  <div>
+    <p class="hi">Hello, welcome. I'm</p>
+    <h1 aria-label="Zulharith" id="name"></h1>
+    <p class="tag">I make things, learn as I go, and keep it all in one place.</p>
+    <div class="btns">
+      <a class="btn main" href="#work">See my work</a>
+      <a class="btn alt" href="#connect">Contact me</a>
+    </div>
+  </div>
+   <!-- GAMBARRRRRRRR -->
+  <div class="photo">
+    <div class="frame" id="frame">Z<img src="raya.jpg" alt="Photo of Zulharith" onerror="this.remove()"></div>
+  </div>
+  <span class="scrollcue">Scroll down ↓</span>
+</section>
+
+<section id="about" class="about" data-bg="#eef0ff">
+  <h2>About me</h2>
+  <p id="aboutText">I'm Zulharith, a student from Malaysia. I like building small projects, trying new tools and learning something new every week. This site is where my work and ideas live.</p>
+</section>
+
+<section id="work" data-bg="#e9f6f0">
+  <h2>Things I've made</h2>
+  <div class="list">
+    <a class="row pre" href="#" style="--c:var(--lilac)"><h3>Project one</h3><p>A short line about what it is and what you did.</p><span class="k">Web</span></a>
+    <a class="row pre" href="#" style="--c:var(--mint)"><h3>Project two</h3><p>A short line about what it is and what you did.</p><span class="k">Design</span></a>
+    <a class="row pre" href="#" style="--c:var(--peach)"><h3>Project three</h3><p>A short line about what it is and what you did.</p><span class="k">School</span></a>
+  </div>
+</section>
+
+<section id="connect" data-bg="#fdf1ee">
+  <h2>Let's connect</h2>
+  <p style="color:var(--muted);margin:0 0 24px">Tap any of these to reach me.</p>
+  <div class="links">
+    <a class="pill" style="--c:var(--lilac)" href="https://instagram.com/imnotzul" target="_blank" rel="noopener">Instagram</a>
+    <a class="pill" style="--c:var(--mint)" href="https://github.com/callmerisss" target="_blank" rel="noopener">GitHub</a>
+    <a class="pill" style="--c:var(--sky)" href="mailto:zzzick123@gmail.com">Email me</a>
+  </div>
+</section>
+<!-- ================= END OF EDIT AREA ================= -->
+
+<footer>© <span id="yr">2026</span> Zulharith. Thanks for stopping by.</footer>
+
+<script>
+// 1. Name letters rise on load
+const name = document.getElementById("name");
+[..."Zulharith"].forEach((c,i)=>{const w=document.createElement("span");w.className="wrap";w.setAttribute("aria-hidden","true");const l=document.createElement("span");l.className="l";l.style.setProperty("--i",i);l.textContent=c;w.appendChild(l);name.appendChild(w)});
+document.getElementById("yr").textContent=new Date().getFullYear();
+
+// 2. About text lights up word by word while scrolling
+const at=document.getElementById("aboutText");
+at.innerHTML=at.textContent.split(" ").map(w=>`<span class="w">${w}</span>`).join(" ");
+const words=[...at.querySelectorAll(".w")];
+
+// 3. Parallax (transform only) + about words, with cached measurements
+const blobs=[...document.querySelectorAll(".blob")], frame=document.getElementById("frame");
+const calm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const speeds=blobs.map(b=>b.dataset.s*-4);
+let tick=false, aTop=0, aH=1, vh=innerHeight, lit=0;
+function measure(){vh=innerHeight;const r=at.getBoundingClientRect();aTop=r.top+scrollY;aH=r.height}
+function frameUpdate(){
+  const y=scrollY;
+  if(!calm){
+    for(let i=0;i<blobs.length;i++)blobs[i].style.transform="translate3d(0,"+(y*speeds[i]).toFixed(1)+"px,0)";
+    frame.style.transform="translate3d(0,"+(Math.min(y,vh)*-.06).toFixed(1)+"px,0)";
+  }
+  const p=Math.min(1,Math.max(0,(vh*.85-(aTop-y))/(aH+vh*.35)));
+  const n=Math.min(words.length,Math.ceil(p*1.1*words.length));
+  while(lit<n)words[lit++].classList.add("on");
+  while(lit>n)words[--lit].classList.remove("on");
+  tick=false;
+}
+addEventListener("scroll",()=>{if(!tick){tick=true;requestAnimationFrame(frameUpdate)}},{passive:true});
+addEventListener("resize",()=>{measure();frameUpdate()});
+addEventListener("load",()=>{measure();frameUpdate()});
+measure();frameUpdate();
+
+// 4. Background colour shifts between sections; project rows slide in
+const secs=[...document.querySelectorAll("section[data-bg]")];
+const layers=secs.map((sec,i)=>{const d=document.createElement("div");d.className="bgl"+(i?"":" on");d.style.background=sec.dataset.bg;d.setAttribute("aria-hidden","true");document.body.prepend(d);return d});
+const bgObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const k=secs.indexOf(e.target);layers.forEach((l,i)=>l.classList.toggle("on",i===k))}}),{rootMargin:"-45% 0px -45% 0px"});
+secs.forEach(s=>bgObs.observe(s));
+const rowObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove("pre");rowObs.unobserve(e.target)}}),{threshold:.3});
+document.querySelectorAll(".row").forEach((r,i)=>{r.style.transitionDelay=i*90+"ms,0s,0s,0s";rowObs.observe(r)});
+</script>
 </body>
 </html>
