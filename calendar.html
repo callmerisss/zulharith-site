@@ -1,1 +1,72 @@
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Fun calendar</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}.hd h2{font-size:1.6rem}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal small{text-align:center;color:var(--muted);font-size:13px}
+.d{min-height:64px;border:0;border-radius:14px;background:rgba(255,255,255,.7);font:inherit;color:inherit;cursor:pointer;padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .2s,background .2s}
+.d:hover{transform:scale(1.1);background:var(--lilac);position:relative;z-index:1}
+.d.t{box-shadow:inset 0 0 0 2px var(--accent)}.d.s{background:var(--accent);color:#fff}
+.d span{font-size:.95rem;font-weight:500}.d em{font-style:normal;font-size:.9rem;line-height:1}
+.ev{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e6e3f6}.ev span{font-size:1.4rem}.ev b{flex:1;font-weight:500}
+.pk{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pk button{font-size:1.4rem;background:#fff;border:2px solid transparent;border-radius:12px;cursor:pointer;padding:2px 8px;transition:transform .2s}
+.pk button:hover{transform:scale(1.2) rotate(-8deg)}.pk button.on{border-color:var(--accent)}
+</style></head>
+<body data-title="Fun calendar">
+<div class="wrap" id="m" hidden><div class="top" id="bar"></div>
+  <div class="card"><div class="hd"><button class="btn sm alt" id="pv">‹</button><h2 id="mt"></h2><div class="row"><button class="btn sm alt" id="td">Today</button><button class="btn sm alt" id="nx">›</button></div></div><div class="cal" id="cal"></div></div>
+  <div class="card" id="day"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="common.js"></script>
+<script>
+boot(()=>{
+const E=["🎂","🎉","📚","✈️","💪","🍕","⭐","❤️"];
+let ev={},cur=new Date(),sel,em=E[0];
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+const today=iso(new Date());sel=today;
+async function load(){
+  const {data,error}=await sb.from("events").select("*").order("created_at");
+  ev={};if(!error)data.forEach(r=>(ev[r.day]=ev[r.day]||[]).push(r));
+  draw();
+}
+function draw(){
+  const y=cur.getFullYear(),m=cur.getMonth(),first=new Date(y,m,1).getDay(),n=new Date(y,m+1,0).getDate();
+  $("mt").textContent=cur.toLocaleString([],{month:"long",year:"numeric"});
+  let h=["S","M","T","W","T","F","S"].map(d=>`<small>${d}</small>`).join("")+"<i></i>".repeat(first);
+  for(let d=1;d<=n;d++){const k=iso(new Date(y,m,d)),e=(ev[k]||[]).slice(0,3).map(x=>x.emoji||"⭐").join("");
+    h+=`<button class="d${k===today?" t":""}${k===sel?" s":""}" data-d="${k}"><span>${d}</span><em>${e}</em></button>`}
+  $("cal").innerHTML=h;
+  const l=ev[sel]||[];
+  $("day").innerHTML=`<h3>${new Date(sel+"T00:00").toLocaleDateString([],{weekday:"long",day:"numeric",month:"long"})}</h3>`+
+    (l.length?l.map(r=>`<div class="ev"><span>${esc(r.emoji||"⭐")}</span><b>${esc(r.title)}</b><button class="del" data-id="${esc(r.id)}">Delete</button></div>`).join(""):'<p class="muted">Nothing planned. Add something fun.</p>')+
+    `<div class="pk" style="margin-top:12px">${E.map(x=>`<button data-e="${x}" class="${x===em?"on":""}">${x}</button>`).join("")}</div><div class="row"><input id="nt" placeholder="What's happening?" maxlength="80" style="flex:1;margin:0"><button class="btn" id="ad">Add</button></div>`;
+}
+function burst(el){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const r=el.getBoundingClientRect();
+  for(let i=0;i<14;i++){const s=document.createElement("span"),a=Math.random()*6.28,d=60+Math.random()*90;
+    s.textContent=em;s.style.cssText=`position:fixed;left:${r.left+r.width/2}px;top:${r.top}px;pointer-events:none;font-size:20px;z-index:9`;document.body.appendChild(s);
+    s.animate([{transform:"none",opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d-50}px) rotate(${Math.random()*360}deg)`,opacity:0}],{duration:900,easing:"ease-out"}).onfinish=()=>s.remove()}
+}
+$("cal").onclick=e=>{const b=e.target.closest("[data-d]");if(b){sel=b.dataset.d;draw()}};
+$("day").onclick=async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.e){em=b.dataset.e;draw();return}
+  if(b.dataset.id){await sb.from("events").delete().eq("id",b.dataset.id);load();return}
+  if(b.id==="ad"){
+    const title=$("nt").value.trim();if(!title)return;
+    burst(b);b.disabled=true;
+    const {error}=await sb.from("events").insert({day:sel,title,emoji:em});
+    if(error){b.disabled=false;alert("Could not save.");return}
+    load();
+  }
+};
+$("day").onkeydown=e=>{if(e.key==="Enter"&&e.target.id==="nt")$("ad").click()};
+const go=n=>{cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);draw()};
+$("pv").onclick=()=>go(-1);$("nx").onclick=()=>go(1);
+$("td").onclick=()=>{cur=new Date();sel=today;draw()};
+load();
+});
+</script></body></html>
