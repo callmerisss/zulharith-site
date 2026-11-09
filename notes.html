@@ -24,7 +24,7 @@ function render(){
   const q=$("q").value.toLowerCase();
   const l=notes.filter(n=>((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q));
   $("list").innerHTML=l.length?l.map(n=>`<div class="card">${n.title?`<h3>${esc(n.title)}</h3>`:""}<p>${esc(n.body)}</p>${n.image_path?`<img data-k="${esc(n.image_path)}" alt="">`:""}<div class="meta"><span>${new Date(n.created_at).toLocaleString()}</span><button class="del" data-id="${esc(n.id)}">Delete</button></div></div>`).join(""):'<div class="card muted">No notes yet.</div>';
-  document.querySelectorAll("img[data-k]").forEach(async i=>{const u=await blobUrl(i.dataset.k);if(u)i.src=u;else i.replaceWith(Object.assign(document.createElement('small'),{className:'muted',textContent:'⚠ Image could not load'}))});
+  document.querySelectorAll("img[data-k]").forEach(async i=>{const u=await blobUrl(i.dataset.k);if(u)i.src=u;else i.replaceWith(Object.assign(document.createElement('small'),{className:'muted',textContent:'⚠ Image could not load ('+(errs[i.dataset.k]||'unknown')+')'}))});
 }
 $("q").oninput=render;
 $("list").onclick=async e=>{
