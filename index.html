@@ -83,7 +83,7 @@ h1 .l{animation:none;transform:none;opacity:1}
   <a class="say" href="#connect">Say hi</a>
 </header>
 
-<!-- ================= DETAILLLLLLSSSSSSSSSS ================= -->
+<!-- ================= EDIT YOUR DETAILS BELOW ================= -->
 <section id="top" data-bg="#f6f5ff">
   <div>
     <p class="hi">Hello, welcome. I'm</p>
@@ -94,9 +94,9 @@ h1 .l{animation:none;transform:none;opacity:1}
       <a class="btn alt" href="#connect">Contact me</a>
     </div>
   </div>
-   <!-- GAMBARRRRRRRR -->
   <div class="photo">
-    <div class="frame" id="frame">Z<img src="raya.jpg" alt="Photo of Zulharith" onerror="this.remove()"></div>
+    <!-- Put your photo in the repo named photo.jpg -->
+    <div class="frame" id="frame">Z<img src="photo.jpg" alt="Photo of Zulharith" onerror="this.remove()"></div>
   </div>
   <span class="scrollcue">Scroll down ↓</span>
 </section>
@@ -119,9 +119,9 @@ h1 .l{animation:none;transform:none;opacity:1}
   <h2>Let's connect</h2>
   <p style="color:var(--muted);margin:0 0 24px">Tap any of these to reach me.</p>
   <div class="links">
-    <a class="pill" style="--c:var(--lilac)" href="https://instagram.com/imnotzul" target="_blank" rel="noopener">Instagram</a>
+    <a class="pill" style="--c:var(--lilac)" href="https://instagram.com/YOUR_INSTAGRAM" target="_blank" rel="noopener">Instagram</a>
     <a class="pill" style="--c:var(--mint)" href="https://github.com/callmerisss" target="_blank" rel="noopener">GitHub</a>
-    <a class="pill" style="--c:var(--sky)" href="mailto:zzzick123@gmail.com">Email me</a>
+    <a class="pill" style="--c:var(--sky)" href="mailto:YOUR_EMAIL@example.com">Email me</a>
   </div>
 </section>
 <!-- ================= END OF EDIT AREA ================= -->
@@ -169,6 +169,17 @@ const bgObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){con
 secs.forEach(s=>bgObs.observe(s));
 const rowObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove("pre");rowObs.unobserve(e.target)}}),{threshold:.3});
 document.querySelectorAll(".row").forEach((r,i)=>{r.style.transitionDelay=i*90+"ms,0s,0s,0s";rowObs.observe(r)});
+// 5. Keep the address clean: scroll to sections without adding #name to the URL
+document.addEventListener("click",e=>{
+  const a=e.target.closest('a[href^="#"]');
+  if(!a||a.getAttribute("href")==="#")return;
+  const t=document.querySelector(a.getAttribute("href"));
+  if(!t)return;
+  e.preventDefault();
+  t.scrollIntoView({behavior:calm?"auto":"smooth"});
+  history.replaceState(null,"",location.pathname+location.search);
+});
+if(location.hash)history.replaceState(null,"",location.pathname+location.search);
 </script>
 </body>
 </html>
