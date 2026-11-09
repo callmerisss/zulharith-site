@@ -1,1 +1,54 @@
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Countdown</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.add{display:grid;grid-template-columns:80px 1fr 1fr auto;gap:10px;align-items:start}.add *{margin:0}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.cd{background:var(--c);border-radius:24px;padding:20px;margin:0;transition:transform .3s}.cd:hover{transform:translateY(-5px) rotate(-.8deg)}
+.cd h3{font-size:1.4rem}.cd h3 span{display:inline-block;margin-right:6px;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}.cd:hover h3 span{transform:scale(1.35) rotate(-12deg)}
+.u{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 8px;text-align:center}
+.u div{background:rgba(255,255,255,.65);border-radius:14px;padding:8px 2px}
+.u b{display:block;font:700 1.7rem "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}.u small{color:var(--muted);font-size:12px}
+@media(max-width:640px){.add{grid-template-columns:70px 1fr}.add button{grid-column:1/-1}}
+</style></head>
+<body data-title="Countdown">
+<div class="wrap wide" id="m" hidden><div class="top" id="bar"></div>
+  <div class="card add">
+    <select id="e"><option>🎉</option><option>🎂</option><option>✈️</option><option>📚</option><option>🎓</option><option>🏖️</option><option>⭐</option><option>❤️</option></select>
+    <input id="t" placeholder="What are you counting down to?" maxlength="80">
+    <input id="d" type="datetime-local">
+    <button class="btn" id="add">Add</button>
+  </div>
+  <p class="muted" id="st"></p>
+  <div class="g" id="list"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="common.js"></script>
+<script>
+boot(()=>{
+const C=["lilac","mint","peach","sky","butter","rose"];
+async function load(){
+  const {data,error}=await sb.from("countdowns").select("*").order("target");
+  if(error){$("list").innerHTML='<div class="card muted">Could not load.</div>';return}
+  $("list").innerHTML=data.length?data.map((r,i)=>`<div class="card cd" data-t="${esc(r.target)}" style="--c:var(--${C[i%6]})"><h3><span>${esc(r.emoji||"🎉")}</span>${esc(r.title)}</h3><div class="u"><div><b></b><small>days</small></div><div><b></b><small>hours</small></div><div><b></b><small>min</small></div><div><b></b><small>sec</small></div></div><div class="meta"><span class="st"></span><button class="del" data-id="${esc(r.id)}">Delete</button></div><small class="muted">${new Date(r.target).toLocaleString()}</small></div>`).join(""):'<div class="card muted">No countdowns yet. Add one above.</div>';
+  tick();
+}
+function tick(){
+  document.querySelectorAll("[data-t]").forEach(c=>{
+    let s=Math.floor((new Date(c.dataset.t)-Date.now())/1000);const past=s<0;s=Math.abs(s);
+    const v=[Math.floor(s/86400),Math.floor(s%86400/3600),Math.floor(s%3600/60),s%60];
+    c.querySelectorAll("b").forEach((b,i)=>b.textContent=String(v[i]).padStart(2,"0"));
+    c.querySelector(".st").textContent=past?"🎉 It happened! Counting up":"to go";
+  });
+}
+setInterval(tick,1000);
+$("add").onclick=async()=>{
+  const title=$("t").value.trim(),d=$("d").value;
+  if(!title||!d){$("st").textContent="Add a name and a date.";return}
+  const {error}=await sb.from("countdowns").insert({title,emoji:$("e").value,target:new Date(d).toISOString()});
+  if(error){$("st").textContent="Could not save.";return}
+  $("t").value=$("d").value="";$("st").textContent="";load();
+};
+$("list").onclick=async e=>{const id=e.target.dataset.id;if(!id||!confirm("Delete this countdown?"))return;await sb.from("countdowns").delete().eq("id",id);load()};
+load();
+});
+</script></body></html>
