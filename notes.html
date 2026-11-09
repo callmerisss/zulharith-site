@@ -6,7 +6,7 @@
     <input id="t" placeholder="Title (optional)" maxlength="150">
     <textarea id="b" placeholder="Write a note…" maxlength="10000"></textarea>
     <input id="f" type="file" accept="image/*">
-    <div class="row"><button class="btn" id="save">Save note</button><span class="muted" id="st"></span></div>
+    <div class="row"><button class="btn" id="save">Save note</button><span class="muted" id="st"></span><span class="muted" style="margin-left:auto;font-size:14px">● Live</span></div>
   </div>
   <input id="q" placeholder="Search notes…"><div id="list"></div>
 </div>
@@ -24,7 +24,7 @@ function render(){
   const q=$("q").value.toLowerCase();
   const l=notes.filter(n=>((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q));
   $("list").innerHTML=l.length?l.map(n=>`<div class="card">${n.title?`<h3>${esc(n.title)}</h3>`:""}<p>${esc(n.body)}</p>${n.image_path?`<img data-k="${esc(n.image_path)}" alt="">`:""}<div class="meta"><span>${new Date(n.created_at).toLocaleString()}</span><button class="del" data-id="${esc(n.id)}">Delete</button></div></div>`).join(""):'<div class="card muted">No notes yet.</div>';
-  document.querySelectorAll("img[data-k]").forEach(async i=>{const u=await blobUrl(i.dataset.k);u?i.src=u:i.remove()});
+  document.querySelectorAll("img[data-k]").forEach(async i=>{const u=await blobUrl(i.dataset.k);if(u)i.src=u;else i.replaceWith(Object.assign(document.createElement('small'),{className:'muted',textContent:'⚠ Image could not load'}))});
 }
 $("q").oninput=render;
 $("list").onclick=async e=>{
@@ -42,12 +42,13 @@ $("save").onclick=async()=>{
   if(file&&file.size>10485760){$("st").textContent="Image is over 10 MB.";return}
   $("st").textContent="Saving…";$("save").disabled=true;
   let path=null;
-  if(file){try{path=await upload(file)}catch(e){$("st").textContent="Upload failed.";$("save").disabled=false;return}}
+  if(file){try{path=await upload(file)}catch(e){$("st").textContent="Upload failed: "+(e.message||"no connection to storage");$("save").disabled=false;return}}
   const {error}=await sb.from("notes").insert({title,body,image_path:path});
   $("save").disabled=false;
   if(error){if(path)await removeFile(path);$("st").textContent="Could not save.";return}
   $("t").value=$("b").value=$("f").value="";$("st").textContent="Saved.";load();
 };
+sb.channel("notes-live").on("postgres_changes",{event:"*",schema:"public",table:"notes"},load).subscribe();
 load();
 });
 </script></body></html>
