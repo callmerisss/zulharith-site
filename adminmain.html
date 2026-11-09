@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><title>My notes</title>
+<style>:root{--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--accent:#5b4fd6;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(160deg,#f6f5ff,#eef6f2 60%,#fdf1ee);color:var(--ink);font:16px/1.6 "DM Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid #d9d6ee;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+textarea{min-height:110px;resize:vertical}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:500;border:0;border-radius:999px;padding:11px 22px;background:var(--accent);color:#fff;cursor:pointer}
+.btn.alt{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.sm{padding:5px 14px;font-size:14px}
+.msg{color:#b3261e;min-height:1.4em;margin:8px 0 0;font-size:15px}
+.wrap{max-width:720px;margin:0 auto;padding:22px 16px 80px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;gap:10px}
+h1{font-size:2rem}
+.card{background:rgba(255,255,255,.8);border-radius:20px;padding:18px;margin-bottom:14px}
+.card h3{font-size:1.2rem;margin-bottom:4px}
+.card p{margin:6px 0;white-space:pre-wrap;word-wrap:break-word}
+.card img{max-width:100%;border-radius:14px;margin-top:8px;display:block}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-top:10px}
+.del{color:#b3261e;background:none;border:0;cursor:pointer;font:inherit;font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}
+</style></head><body>
+<div class="wrap" id="app" hidden>
+  <div class="top"><h1>My notes</h1>
+    <div class="row"><a class="btn alt sm" href="/" style="text-decoration:none">My site</a><button class="btn sm" id="out">Log out</button></div></div>
+  <div class="card">
+    <input id="t" placeholder="Title (optional)">
+    <textarea id="b" placeholder="Write a note…"></textarea>
+    <input id="f" type="file" accept="image/*">
+    <div class="row"><button class="btn" id="save">Save note</button><span class="muted" id="st"></span></div>
+  </div>
+  <input id="q" placeholder="Search notes…">
+  <div id="list"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ===== PASTE THE SAME SUPABASE DETAILS HERE =====
+const SUPABASE_URL="https://mesaszwdqcrzlpwnlhzf.supabase.co";
+const SUPABASE_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
+// ================================================
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+let uid=null,notes=[],urls={};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function init(){
+  const {data}=await sb.auth.getSession();
+  if(!data.session){location.replace("/admin/");return}
+  uid=data.session.user.id;$("app").hidden=false;load();
+}
+sb.auth.onAuthStateChange((ev)=>{if(ev==="SIGNED_OUT")location.replace("/admin/")});
+
+async function load(){
+  const {data,error}=await sb.from("notes").select("*").order("created_at",{ascending:false});
+  if(error){$("list").innerHTML='<div class="card muted">Could not load notes. Check the Supabase setup.</div>';return}
+  notes=data;urls={};
+  const paths=notes.map(n=>n.image_path).filter(Boolean);
+  if(paths.length){const r=await sb.storage.from("notes").createSignedUrls(paths,3600);(r.data||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
+  render();
+}
+function render(){
+  const q=$("q").value.toLowerCase();
+  const l=notes.filter(n=>((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q));
+  $("list").innerHTML=l.length?l.map(n=>`<div class="card">
+    ${n.title?`<h3>${esc(n.title)}</h3>`:""}<p>${esc(n.body)}</p>
+    ${n.image_path&&urls[n.image_path]?`<img src="${esc(urls[n.image_path])}" alt="">`:""}
+    <div class="meta"><span>${new Date(n.created_at).toLocaleString()}</span><button class="del" data-id="${n.id}">Delete</button></div></div>`).join(""):'<div class="card muted">No notes yet.</div>';
+}
+$("q").oninput=render;
+$("list").addEventListener("click",async e=>{
+  const id=e.target.dataset.id;if(!id||!confirm("Delete this note?"))return;
+  const n=notes.find(x=>x.id===id);
+  await sb.from("notes").delete().eq("id",id);
+  if(n&&n.image_path)await sb.storage.from("notes").remove([n.image_path]);
+  load();
+});
+$("save").onclick=async()=>{
+  const title=$("t").value.trim(),body=$("b").value.trim(),file=$("f").files[0];
+  if(!title&&!body&&!file)return;
+  if(file&&file.size>10*1024*1024){$("st").textContent="Image is over 10 MB.";return}
+  $("st").textContent="Saving…";$("save").disabled=true;
+  let path=null;
+  if(file){
+    path=uid+"/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const up=await sb.storage.from("notes").upload(path,file);
+    if(up.error){$("st").textContent="Upload failed.";$("save").disabled=false;return}
+  }
+  const {error}=await sb.from("notes").insert({title,body,image_path:path});
+  $("save").disabled=false;
+  if(error){$("st").textContent="Could not save.";return}
+  $("t").value="";$("b").value="";$("f").value="";$("st").textContent="Saved.";load();
+};
+$("out").onclick=()=>sb.auth.signOut();
+init();
+</script></body></html>
