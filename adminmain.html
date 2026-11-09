@@ -1,102 +1,34 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235b4fd6'/%3E%3Cpath d='M20 20h24L20 44h24' fill='none' stroke='white' stroke-width='6.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><title>My notes</title>
-<style>:root{--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--accent:#5b4fd6;color-scheme:light}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:linear-gradient(160deg,#f6f5ff,#eef6f2 60%,#fdf1ee);color:var(--ink);font:16px/1.6 "DM Sans",system-ui,sans-serif}
-h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0}
-input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid #d9d6ee;border-radius:12px;padding:12px 14px;margin-bottom:10px}
-textarea{min-height:110px;resize:vertical}
-:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.btn{font:inherit;font-weight:500;border:0;border-radius:999px;padding:11px 22px;background:var(--accent);color:#fff;cursor:pointer}
-.btn.alt{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
-.btn.sm{padding:5px 14px;font-size:14px}
-.msg{color:#b3261e;min-height:1.4em;margin:8px 0 0;font-size:15px}
-.wrap{max-width:720px;margin:0 auto;padding:22px 16px 80px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;gap:10px}
-h1{font-size:2rem}
-.card{background:rgba(255,255,255,.8);border-radius:20px;padding:18px;margin-bottom:14px}
-.card h3{font-size:1.2rem;margin-bottom:4px}
-.card p{margin:6px 0;white-space:pre-wrap;word-wrap:break-word}
-.card img{max-width:100%;border-radius:14px;margin-top:8px;display:block}
-.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-top:10px}
-.del{color:#b3261e;background:none;border:0;cursor:pointer;font:inherit;font-size:14px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.muted{color:var(--muted)}
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Dashboard</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.hero{margin:6px 0 30px}.hero h1{font-size:clamp(2.2rem,7vw,4rem)}.hero p{margin:8px 0 0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:4px;min-height:180px;padding:22px;border-radius:26px;background:var(--c);color:inherit;text-decoration:none;opacity:0;animation:up .7s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i)*80ms);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.tile::after{content:"";position:absolute;inset:0;background:radial-gradient(220px circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.75),transparent 70%);opacity:0;transition:opacity .3s}
+.tile:hover,.tile:focus-visible{transform:translateY(-8px) rotate(-1deg);box-shadow:0 18px 36px -14px rgba(39,38,74,.35)}
+.tile:hover::after{opacity:1}
+.tile>*{position:relative;z-index:1}
+.tile .e{font-size:2.8rem;line-height:1;display:inline-block;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.tile:hover .e{transform:scale(1.25) rotate(-12deg)}
+.tile h3{font-size:1.6rem;margin-top:8px}.tile p{margin:0;color:var(--muted)}
+.tile .go{margin-top:auto;font-weight:500;transition:transform .3s}.tile:hover .go{transform:translateX(8px)}
+@keyframes up{from{opacity:0;transform:translateY(30px)}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.tile{animation:none;opacity:1}}
 </style></head><body>
-<div class="wrap" id="app" hidden>
-  <div class="top"><h1>My notes</h1>
-    <div class="row"><a class="btn alt sm" href="/" style="text-decoration:none">My site</a><button class="btn sm" id="out">Log out</button></div></div>
-  <div class="card">
-    <input id="t" placeholder="Title (optional)" maxlength="150">
-    <textarea id="b" placeholder="Write a note…" maxlength="10000"></textarea>
-    <input id="f" type="file" accept="image/*">
-    <div class="row"><button class="btn" id="save">Save note</button><span class="muted" id="st"></span></div>
-  </div>
-  <input id="q" placeholder="Search notes…">
-  <div id="list"></div>
+<div class="wrap wide" id="m" hidden>
+  <div class="top"><a class="btn alt sm" href="/">My site</a><button class="btn sm" id="out">Log out</button></div>
+  <div class="hero"><h1 id="hi"></h1><p id="clk"></p></div>
+  <div class="grid" id="g"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="common.js"></script>
 <script>
-const SUPABASE_URL="https://mesaszwdqcrzlpwnlhzf.supabase.co";
-const SUPABASE_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=id=>document.getElementById(id);
-let uid=null,notes=[],urls={};
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-async function init(){
-  const {data}=await sb.auth.getSession();
-  if(!data.session){location.replace("/admin");return}
-  uid=data.session.user.id;$("app").hidden=false;load();
-}
-sb.auth.onAuthStateChange((ev)=>{if(ev==="SIGNED_OUT")location.replace("/admin")});
-
-async function load(){
-  const {data,error}=await sb.from("notes").select("*").order("created_at",{ascending:false});
-  if(error){$("list").innerHTML='<div class="card muted">Could not load notes. Check the Supabase setup.</div>';return}
-  notes=data;urls={};
-  const paths=notes.map(n=>n.image_path).filter(Boolean);
-  if(paths.length){const r=await sb.storage.from("notes").createSignedUrls(paths,3600);(r.data||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
-  render();
-}
-function render(){
-  const q=$("q").value.toLowerCase();
-  const l=notes.filter(n=>((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q));
-  $("list").innerHTML=l.length?l.map(n=>`<div class="card">
-    ${n.title?`<h3>${esc(n.title)}</h3>`:""}<p>${esc(n.body)}</p>
-    ${n.image_path&&urls[n.image_path]?`<img src="${esc(urls[n.image_path])}" alt="">`:""}
-    <div class="meta"><span>${new Date(n.created_at).toLocaleString()}</span><button class="del" data-id="${esc(n.id)}">Delete</button></div></div>`).join(""):'<div class="card muted">No notes yet.</div>';
-}
-$("q").oninput=render;
-$("list").addEventListener("click",async e=>{
-  const id=e.target.dataset.id;if(!id||!confirm("Delete this note?"))return;
-  const n=notes.find(x=>String(x.id)===id);
-  const {error}=await sb.from("notes").delete().eq("id",id);
-  if(error){alert("Could not delete this note. Try again.");return}
-  if(n&&n.image_path)await sb.storage.from("notes").remove([n.image_path]);
-  load();
+boot(()=>{
+  const h=new Date().getHours();
+  $("hi").textContent=(h<12?"Good morning":h<18?"Good afternoon":"Good evening")+", Zulharith.";
+  const c=()=>$("clk").textContent=new Date().toLocaleString([],{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});c();setInterval(c,15000);
+  const T=[["Notes","📝","Write things down","/notes","lilac"],["File transfer","📤","Move files between devices","/files","mint"],["Instant","⚡","Send text and links in a flash","/instant","butter"],["Gallery","🖼️","Your photos, all in one place","/gallery","sky"],["Countdown","⏳","Count down to the big days","/countdown","peach"],["Fun calendar","🎈","Plan your days with emoji","/calendar","rose"]];
+  $("g").innerHTML=T.map((t,i)=>`<a class="tile" href="${t[3]}" style="--c:var(--${t[4]});--i:${i}"><span class="e">${t[1]}</span><h3>${t[0]}</h3><p>${t[2]}</p><span class="go">Open →</span></a>`).join("");
+  $("g").addEventListener("pointermove",e=>{const t=e.target.closest(".tile");if(!t)return;const r=t.getBoundingClientRect();t.style.setProperty("--x",e.clientX-r.left+"px");t.style.setProperty("--y",e.clientY-r.top+"px")});
 });
-$("save").onclick=async()=>{
-  const title=$("t").value.trim(),body=$("b").value.trim(),file=$("f").files[0];
-  if(!title&&!body&&!file)return;
-  if(file&&!file.type.startsWith("image/")){$("st").textContent="Please choose an image file.";return}
-  if(file&&file.size>10*1024*1024){$("st").textContent="Image is over 10 MB.";return}
-  $("st").textContent="Saving…";$("save").disabled=true;
-  let path=null;
-  if(file){
-    path=uid+"/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-    const up=await sb.storage.from("notes").upload(path,file);
-    if(up.error){$("st").textContent="Upload failed.";$("save").disabled=false;return}
-  }
-  const {error}=await sb.from("notes").insert({title,body,image_path:path});
-  $("save").disabled=false;
-  if(error){
-    if(path)await sb.storage.from("notes").remove([path]);
-    $("st").textContent="Could not save.";return
-  }
-  $("t").value="";$("b").value="";$("f").value="";$("st").textContent="Saved.";load();
-};
-$("out").onclick=()=>sb.auth.signOut();
-init();
 </script></body></html>
