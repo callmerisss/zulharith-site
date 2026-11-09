@@ -1,1 +1,52 @@
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Gallery</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.mas{columns:3 200px;column-gap:12px}
+.mas img{width:100%;min-height:120px;margin:0 0 12px;border-radius:18px;display:block;cursor:zoom-in;background:var(--lilac);transition:transform .3s,box-shadow .3s}
+.mas img:hover{transform:scale(1.03) rotate(-.6deg);box-shadow:0 14px 28px -12px rgba(39,38,74,.4)}
+.lb{position:fixed;inset:0;z-index:9;background:rgba(39,38,74,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+.lb[hidden]{display:none}
+.lb img{max-width:92vw;max-height:78vh;border-radius:16px;margin:0}
+</style></head>
+<body data-title="Gallery">
+<div class="wrap wide" id="m" hidden><div class="top" id="bar"></div>
+  <div class="row" style="margin-bottom:18px"><label class="btn">＋ Add photos<input id="f" type="file" accept="image/*" multiple hidden></label><span class="muted" id="st"></span></div>
+  <div class="mas" id="list"></div>
+</div>
+<div class="lb" id="lb" hidden><img id="li" alt=""><div class="row"><button class="btn sm alt" id="lp">‹ Prev</button><button class="btn sm alt" id="ln">Next ›</button><button class="btn sm alt" id="ld">Delete</button><button class="btn sm" id="lx">Close</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="common.js"></script>
+<script>
+boot(()=>{
+let rows=[],cur=0;
+async function load(){
+  const {data,error}=await sb.from("files").select("*").eq("kind","photo").order("created_at",{ascending:false});
+  if(error){$("list").innerHTML='<div class="card muted">Could not load photos.</div>';return}
+  rows=data;
+  $("list").innerHTML=rows.length?rows.map((r,i)=>`<img data-i="${i}" alt="${esc(r.name)}">`).join(""):'<div class="card muted">No photos yet. Add your first one.</div>';
+  document.querySelectorAll("#list img").forEach(async i=>{const u=await blobUrl(rows[i.dataset.i].path);u?i.src=u:i.remove()});
+}
+$("f").onchange=async e=>{
+  for(const f of e.target.files){
+    if(!f.type.startsWith("image/")||f.size>10485760){$("st").textContent=f.name+" skipped (images up to 10 MB only).";continue}
+    $("st").textContent="Uploading "+f.name+"…";
+    try{const path=await upload(f);const {error}=await sb.from("files").insert({name:f.name,size:f.size,type:f.type,path,kind:"photo"});if(error){await removeFile(path);throw 0}}
+    catch(x){$("st").textContent="Could not upload "+f.name+".";e.target.value="";return}
+  }
+  e.target.value="";$("st").textContent="Done.";load();
+};
+async function show(i){cur=(i+rows.length)%rows.length;$("li").src=await blobUrl(rows[cur].path)||"";$("lb").hidden=false}
+$("list").onclick=e=>{if(e.target.dataset.i!==undefined)show(+e.target.dataset.i)};
+$("lx").onclick=()=>$("lb").hidden=true;
+$("lb").onclick=e=>{if(e.target.id==="lb")$("lb").hidden=true};
+$("lp").onclick=()=>show(cur-1);$("ln").onclick=()=>show(cur+1);
+$("ld").onclick=async()=>{
+  const r=rows[cur];if(!r||!confirm("Delete this photo?"))return;
+  const {error}=await sb.from("files").delete().eq("id",r.id);
+  if(error){alert("Could not delete.");return}
+  await removeFile(r.path);$("lb").hidden=true;load();
+};
+addEventListener("keydown",e=>{if($("lb").hidden)return;if(e.key==="Escape")$("lb").hidden=true;if(e.key==="ArrowLeft")show(cur-1);if(e.key==="ArrowRight")show(cur+1)});
+load();
+});
+</script></body></html>
