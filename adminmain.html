@@ -48,10 +48,10 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 
 async function init(){
   const {data}=await sb.auth.getSession();
-  if(!data.session){location.replace("/admin/");return}
+  if(!data.session){location.replace("/admin");return}
   uid=data.session.user.id;$("app").hidden=false;load();
 }
-sb.auth.onAuthStateChange((ev)=>{if(ev==="SIGNED_OUT")location.replace("/admin/")});
+sb.auth.onAuthStateChange((ev)=>{if(ev==="SIGNED_OUT")location.replace("/admin")});
 
 async function load(){
   const {data,error}=await sb.from("notes").select("*").order("created_at",{ascending:false});
