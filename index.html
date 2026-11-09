@@ -80,7 +80,7 @@ h1 .l{animation:none;transform:none;opacity:1}
 
 <header>
   <a class="logo" href="#top">Z.</a>
-  <a class="say" href="connect">Say hi</a>
+  <a class="say" href="#connect">Say hi</a>
 </header>
 
 <!-- ================= EDIT YOUR DETAILS BELOW ================= -->
@@ -169,17 +169,6 @@ const bgObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){con
 secs.forEach(s=>bgObs.observe(s));
 const rowObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove("pre");rowObs.unobserve(e.target)}}),{threshold:.3});
 document.querySelectorAll(".row").forEach((r,i)=>{r.style.transitionDelay=i*90+"ms,0s,0s,0s";rowObs.observe(r)});
-// 5. Keep the address clean: scroll to sections without adding #name to the URL
-document.addEventListener("click",e=>{
-  const a=e.target.closest('a[href^="#"]');
-  if(!a||a.getAttribute("href")==="#")return;
-  const t=document.querySelector(a.getAttribute("href"));
-  if(!t)return;
-  e.preventDefault();
-  t.scrollIntoView({behavior:calm?"auto":"smooth"});
-  history.replaceState(null,"",location.pathname+location.search);
-});
-if(location.hash)history.replaceState(null,"",location.pathname+location.search);
 </script>
 </body>
 </html>
