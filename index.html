@@ -6,9 +6,16 @@
 <title>Zulharith</title>
 <meta name="description" content="Zulharith's portfolio: things I make, and how to reach me.">
 <meta name="theme-color" content="#f6f5ff">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zulharith.me">
+<meta property="og:title" content="Zulharith">
+<meta property="og:description" content="Zulharith's portfolio: things I make, and how to reach me.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235b4fd6'/%3E%3Cpath d='M20 20h24L20 44h24' fill='none' stroke='white' stroke-width='6.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script>document.documentElement.className="js"</script>
 <style>
 :root{--bg:#f6f5ff;--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--accent:#5b4fd6;color-scheme:light}
 *{box-sizing:border-box}
@@ -27,11 +34,11 @@ a{color:inherit}
 header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:18px clamp(18px,5vw,56px);z-index:5}
 header a{text-decoration:none;font-weight:500}
 header .logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.2rem}
-header .say{background:var(--ink);color:#fff;padding:8px 18px;border-radius:999px;font-size:15px}
 section{padding:clamp(80px,12vw,150px) clamp(18px,5vw,56px);max-width:1120px;margin:0 auto}
-#top{min-height:100svh;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;padding-top:110px}
+#top{position:relative;min-height:100svh;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;padding-top:110px}
 .hi{color:var(--muted);margin:0 0 14px}
 h1{font-size:clamp(3.2rem,10vw,7.4rem);font-weight:700}
+.js #name .plain{display:none}
 h1 .l{display:inline-block;transform:translateY(110%);opacity:0;animation:rise .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i)*70ms + 150ms)}
 h1 span.wrap{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}
 @keyframes rise{to{transform:none;opacity:1}}
@@ -80,14 +87,13 @@ h1 .l{animation:none;transform:none;opacity:1}
 
 <header>
   <a class="logo" href="#top">Z.</a>
-  <a class="say" href="/admin">Admin</a>
 </header>
 
 <!-- ================= EDIT YOUR DETAILS BELOW ================= -->
 <section id="top" data-bg="#f6f5ff">
   <div>
     <p class="hi">Hello, welcome. I'm</p>
-    <h1 aria-label="Zulharith" id="name"></h1>
+    <h1 aria-label="Zulharith" id="name"><span class="plain">Zulharith</span></h1>
     <p class="tag">I make things, learn as I go, and keep it all in one place.</p>
     <div class="btns">
       <a class="btn main" href="#work">See my work</a>
@@ -131,6 +137,7 @@ h1 .l{animation:none;transform:none;opacity:1}
 <script>
 // 1. Name letters rise on load
 const name = document.getElementById("name");
+name.textContent="";
 [..."Zulharith"].forEach((c,i)=>{const w=document.createElement("span");w.className="wrap";w.setAttribute("aria-hidden","true");const l=document.createElement("span");l.className="l";l.style.setProperty("--i",i);l.textContent=c;w.appendChild(l);name.appendChild(w)});
 document.getElementById("yr").textContent=new Date().getFullYear();
 
