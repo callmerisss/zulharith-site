@@ -1,1 +1,53 @@
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Notes</title>
+<link rel="stylesheet" href="common.css"><style>.card p{margin:6px 0;white-space:pre-wrap;word-wrap:break-word}</style></head>
+<body data-title="Notes">
+<div class="wrap" id="m" hidden><div class="top" id="bar"></div>
+  <div class="card">
+    <input id="t" placeholder="Title (optional)" maxlength="150">
+    <textarea id="b" placeholder="Write a note…" maxlength="10000"></textarea>
+    <input id="f" type="file" accept="image/*">
+    <div class="row"><button class="btn" id="save">Save note</button><span class="muted" id="st"></span></div>
+  </div>
+  <input id="q" placeholder="Search notes…"><div id="list"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="common.js"></script>
+<script>
+boot(()=>{
+let notes=[];
+async function load(){
+  const {data,error}=await sb.from("notes").select("*").order("created_at",{ascending:false});
+  if(error){$("list").innerHTML='<div class="card muted">Could not load notes.</div>';return}
+  notes=data;render();
+}
+function render(){
+  const q=$("q").value.toLowerCase();
+  const l=notes.filter(n=>((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q));
+  $("list").innerHTML=l.length?l.map(n=>`<div class="card">${n.title?`<h3>${esc(n.title)}</h3>`:""}<p>${esc(n.body)}</p>${n.image_path?`<img data-k="${esc(n.image_path)}" alt="">`:""}<div class="meta"><span>${new Date(n.created_at).toLocaleString()}</span><button class="del" data-id="${esc(n.id)}">Delete</button></div></div>`).join(""):'<div class="card muted">No notes yet.</div>';
+  document.querySelectorAll("img[data-k]").forEach(async i=>{const u=await blobUrl(i.dataset.k);u?i.src=u:i.remove()});
+}
+$("q").oninput=render;
+$("list").onclick=async e=>{
+  const id=e.target.dataset.id;if(!id||!confirm("Delete this note?"))return;
+  const n=notes.find(x=>String(x.id)===id);
+  const {error}=await sb.from("notes").delete().eq("id",id);
+  if(error){alert("Could not delete this note. Try again.");return}
+  if(n&&n.image_path)await removeFile(n.image_path);
+  load();
+};
+$("save").onclick=async()=>{
+  const title=$("t").value.trim(),body=$("b").value.trim(),file=$("f").files[0];
+  if(!title&&!body&&!file)return;
+  if(file&&!file.type.startsWith("image/")){$("st").textContent="Please choose an image file.";return}
+  if(file&&file.size>10485760){$("st").textContent="Image is over 10 MB.";return}
+  $("st").textContent="Saving…";$("save").disabled=true;
+  let path=null;
+  if(file){try{path=await upload(file)}catch(e){$("st").textContent="Upload failed.";$("save").disabled=false;return}}
+  const {error}=await sb.from("notes").insert({title,body,image_path:path});
+  $("save").disabled=false;
+  if(error){if(path)await removeFile(path);$("st").textContent="Could not save.";return}
+  $("t").value=$("b").value=$("f").value="";$("st").textContent="Saved.";load();
+};
+load();
+});
+</script></body></html>
