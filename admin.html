@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><title>Admin login</title>
+<style>:root{--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--accent:#5b4fd6;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(160deg,#f6f5ff,#eef6f2 60%,#fdf1ee);color:var(--ink);font:16px/1.6 "DM Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid #d9d6ee;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+textarea{min-height:110px;resize:vertical}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:500;border:0;border-radius:999px;padding:11px 22px;background:var(--accent);color:#fff;cursor:pointer}
+.btn.alt{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.sm{padding:5px 14px;font-size:14px}
+.msg{color:#b3261e;min-height:1.4em;margin:8px 0 0;font-size:15px}
+body{display:grid;place-items:center;padding:20px}
+.box{background:rgba(255,255,255,.75);backdrop-filter:blur(6px);border-radius:28px;padding:36px 30px;width:min(100%,400px)}
+h1{font-size:2.2rem;margin-bottom:6px}.sub{color:var(--muted);margin:0 0 22px}
+.back{display:block;text-align:center;margin-top:18px;color:var(--muted);font-size:15px}
+</style></head><body>
+<main class="box">
+  <h1>Admin</h1><p class="sub">Sign in to open your notes.</p>
+  <form id="f">
+    <input id="email" type="email" placeholder="Email" autocomplete="username" required>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password" required>
+    <button class="btn" id="go" style="width:100%">Log in</button>
+    <p class="msg" id="msg" role="alert"></p>
+  </form>
+  <a class="back" href="/">← Back to my site</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ===== PASTE YOUR SUPABASE DETAILS HERE =====
+const SUPABASE_URL="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
+const SUPABASE_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
+// ============================================
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const msg=document.getElementById("msg");
+sb.auth.getSession().then(({data})=>{if(data.session)location.replace("/adminmain/")});
+document.getElementById("f").addEventListener("submit",async e=>{
+  e.preventDefault();msg.textContent="";
+  const go=document.getElementById("go");go.disabled=true;go.textContent="Logging in…";
+  const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pw.value});
+  if(error){msg.textContent="Wrong email or password. Try again.";go.disabled=false;go.textContent="Log in";return}
+  location.replace("/adminmain/");
+});
+</script></body></html>
