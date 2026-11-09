@@ -15,6 +15,6 @@ async function boot(start){
   sb.auth.onAuthStateChange(e=>{if(e==="SIGNED_OUT")location.replace("/admin")});
   const t=document.body.dataset.title;
   if(t)$("bar").innerHTML=`<div><a class="back" href="/adminmain">← Dashboard</a><h1>${esc(t)}</h1></div><button class="btn sm" id="out">Log out</button>`;
-  $("out").onclick=()=>sb.auth.signOut();
+  $("out").onclick=()=>sb.auth.signOut({scope:"local"});
   $("m").hidden=false;start();
 }
