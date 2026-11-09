@@ -29,17 +29,17 @@ h1{font-size:2.2rem;margin-bottom:6px}.sub{color:var(--muted);margin:0 0 22px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 // ===== PASTE YOUR SUPABASE DETAILS HERE =====
-const SUPABASE_URL="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
+const SUPABASE_URL="https://mesaszwdqcrzlpwnlhzf.supabase.co";
 const SUPABASE_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
 // ============================================
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const msg=document.getElementById("msg");
-sb.auth.getSession().then(({data})=>{if(data.session)location.replace("/adminmain/")});
+sb.auth.getSession().then(({data})=>{if(data.session)location.replace("/adminmain")});
 document.getElementById("f").addEventListener("submit",async e=>{
   e.preventDefault();msg.textContent="";
   const go=document.getElementById("go");go.disabled=true;go.textContent="Logging in…";
   const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pw.value});
   if(error){msg.textContent="Wrong email or password. Try again.";go.disabled=false;go.textContent="Log in";return}
-  location.replace("/adminmain/");
+  location.replace("/adminmain");
 });
 </script></body></html>
