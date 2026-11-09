@@ -1,0 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap");
+:root{--ink:#27264a;--muted:#6b6a8c;--lilac:#e4defa;--mint:#d6f0e4;--sky:#d5e8fb;--peach:#fde3dc;--butter:#fff1c2;--rose:#f9dcee;--accent:#5b4fd6;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(160deg,#f6f5ff,#eef6f2 60%,#fdf1ee) fixed;color:var(--ink);font:16px/1.6 "DM Sans",system-ui,sans-serif}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(40vmax 40vmax at 8% 0,var(--lilac),transparent 70%),radial-gradient(34vmax 34vmax at 100% 55%,var(--mint),transparent 70%),radial-gradient(34vmax 34vmax at 30% 100%,var(--peach),transparent 70%);animation:drift 16s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate3d(0,-26px,0) scale(1.06)}}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0;line-height:1.1}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid #d9d6ee;border-radius:12px;padding:11px 14px;margin-bottom:10px}
+textarea{min-height:100px;resize:vertical}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:500;border:0;border-radius:999px;padding:10px 22px;background:var(--accent);color:#fff;cursor:pointer;text-decoration:none;display:inline-block;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.alt{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.sm{padding:5px 14px;font-size:14px}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 80px}
+.wrap.wide{max-width:1000px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:10px}
+.top h1{font-size:2rem}
+.back{color:var(--muted);text-decoration:none;font-size:15px}
+.card{background:rgba(255,255,255,.8);border-radius:20px;padding:18px;margin-bottom:14px}
+.card h3{font-size:1.2rem;margin-bottom:4px}
+.card img{max-width:100%;border-radius:14px;margin-top:8px;display:block}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-top:10px}
+.del{color:#b3261e;background:none;border:0;cursor:pointer;font:inherit;font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
