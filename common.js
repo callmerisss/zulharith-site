@@ -54,3 +54,9 @@ async function boot(start){
   $("out").onclick=logout;
   $("m").hidden=false;start();
 }
+
+// Re-run fn whenever the table changes (waits 250ms so bursts, like uploading 5 photos, cause one refresh)
+function live(table,fn){
+  let t;
+  sb.channel(table+"-live").on("postgres_changes",{event:"*",schema:"public",table},()=>{clearTimeout(t);t=setTimeout(fn,250)}).subscribe();
+}
