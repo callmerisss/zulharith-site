@@ -36,6 +36,7 @@ async function removeFile(k){try{await api("/file?key="+encodeURIComponent(k),{m
 async function boot(start){
   const {data}=await sb.auth.getSession();
   if(!data.session){location.replace("/admin");return}
+  if((data.session.user.email||"").toLowerCase()!=="zzzick123@gmail.com"){location.replace("/tools");return}
   // Away for more than 30 minutes? Log out.
   if(isIdle()){logout();return}
   touch();
