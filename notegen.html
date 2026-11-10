@@ -6,7 +6,7 @@
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .chip{background:var(--mint);border-radius:999px;padding:4px 6px 4px 14px;font-size:14px}
 .chip button{border:0;background:none;cursor:pointer;color:var(--ink);font:inherit;padding:0 6px}
-#out{min-height:320px;font-size:15.5px;line-height:1.6}
+#nout{min-height:320px;font-size:15.5px;line-height:1.6}
 .row input,.row select{margin:0}
 </style></head>
 <body>
@@ -18,7 +18,7 @@
     <div class="row"><select id="sty" style="flex:1;min-width:180px"><option value="summary">Short summary</option><option value="detailed">Detailed study notes</option><option value="bullets">Bullet points</option><option value="qa">Questions and answers</option></select><button class="btn" id="go">Generate notes</button></div>
     <p class="muted" id="st"></p>
   </div>
-  <div class="card" id="res" hidden><h3>Your notes</h3><textarea id="out" readonly></textarea><div class="row"><button class="btn sm" id="cp">Copy</button><button class="btn sm alt" id="dl">Download .txt</button></div></div>
+  <div class="card" id="res" hidden><h3>Your notes</h3><textarea id="nout" readonly></textarea><div class="row"><button class="btn sm" id="cp">Copy</button><button class="btn sm alt" id="dl">Download .txt</button></div></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
@@ -59,11 +59,11 @@ $("go").onclick=async()=>{
     const {data}=await sb.auth.getSession();
     const r=await fetch(AI_API+"/notes",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},body:JSON.stringify({text,style:$("sty").value,files:files.map(x=>({kind:x.k,data:x.d}))})});
     const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
-    $("out").value=j.notes;$("res").hidden=false;$("st").textContent="";$("res").scrollIntoView({behavior:"smooth"});
+    $("nout").value=j.notes;$("res").hidden=false;$("st").textContent="";$("res").scrollIntoView({behavior:"smooth"});
   }catch(e){$("st").textContent="Could not generate: "+e.message}
   $("go").disabled=false;
 };
-$("cp").onclick=async()=>{try{await navigator.clipboard.writeText($("out").value);$("cp").textContent="Copied!";setTimeout(()=>$("cp").textContent="Copy",1200)}catch(e){}};
-$("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("out").value],{type:"text/plain"}));a.download="notes.txt";a.click()};
+$("cp").onclick=async()=>{try{await navigator.clipboard.writeText($("nout").value);$("cp").textContent="Copied!";setTimeout(()=>$("cp").textContent="Copy",1200)}catch(e){}};
+$("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("nout").value],{type:"text/plain"}));a.download="notes.txt";a.click()};
 });
 </script></body></html>
