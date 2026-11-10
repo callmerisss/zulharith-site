@@ -1,6 +1,6 @@
 // Shared by login, notegen, timetable and projects.
 const SB_URL="https://mesaszwdqcrzlpwnlhzf.supabase.co",SB_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
-const AI_API="https://zulharith-ai.YOUR-SUBDOMAIN.workers.dev"; // <- your AI worker URL (see steps)
+const AI_API="https://zulharith-ai.zzzick123.workers.dev"; // <- your AI worker URL (see steps)
 const sb=supabase.createClient(SB_URL,SB_KEY),$=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const NEXT=["/tools","/notegen","/timetable","/projects"],safeNext=n=>NEXT.includes(n)?n:"/tools"; // only these may be redirect targets
