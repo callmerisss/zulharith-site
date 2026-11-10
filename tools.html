@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><script src="theme.js"></script><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tools</title>
+<link rel="stylesheet" href="common.css">
+<style>
+:root{--hub:#fff}
+html[data-theme=dark]{--hub:#1b1a35}
+.stage{min-height:100vh;display:grid;place-items:center;align-content:center;text-align:center;padding:70px 12px 30px}
+.stage h1{font-size:clamp(2.2rem,6vw,3.6rem)}
+.stage p.muted{margin:6px 0 10px}
+.wheel{position:relative;width:min(94vw,660px);aspect-ratio:1}
+#w{width:100%;height:100%;overflow:visible}
+#w a{cursor:pointer;outline:none}
+.s{stroke:transparent;stroke-width:4;filter:drop-shadow(0 8px 14px rgba(39,38,74,.18))}
+#w a:focus-visible .s{stroke:var(--accent)}
+.hubc{fill:var(--hub);stroke:var(--ink);stroke-width:1.5;pointer-events:none}
+#w text{fill:var(--ink);text-anchor:middle;pointer-events:none;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.hub{position:absolute;inset:28%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;padding:0 3%;pointer-events:none}
+.hub b{font:700 clamp(1.1rem,3.4vw,1.7rem) "Bricolage Grotesque",sans-serif;line-height:1.1}
+.hub span{color:var(--muted);font-size:clamp(.68rem,1.9vw,.95rem);line-height:1.35}
+</style></head><body>
+<main class="stage">
+  <h1>Pick a tool</h1><p class="muted">Hover a slice to preview it. Click to open (tap twice on a phone).</p>
+  <div class="wheel"><svg id="w" viewBox="0 0 640 640" role="group" aria-label="Tools"></svg>
+    <div class="hub"><b id="ht">Tools</b><span id="hd">Choose a slice to see what it does.</span></div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg",W=$("w");
+const T=[
+ {n:"Note generator",e:"📝",u:"/notegen",c:"lilac",d:"Upload photos, files or text. AI reads it deeply and writes clean text notes."},
+ {n:"Timetable",e:"🗓️",u:"/timetable",c:"mint",d:"Build your own Monday to Sunday plan. Edit it, colour it, make it yours."},
+ {n:"Project manager",e:"📌",u:"/projects",c:"peach",d:"Track projects with time left, reminders, teammates and a calendar."}];
+const C=320,R0=135,R1=282,S0=-Math.PI*5/6,calm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const P=(r,a)=>[C+r*Math.cos(a),C+r*Math.sin(a)];
+const arc=(a0,a1,r0,r1)=>{const[x0,y0]=P(r1,a0),[x1,y1]=P(r1,a1),[x2,y2]=P(r0,a1),[x3,y3]=P(r0,a0),l=a1-a0>Math.PI?1:0;return`M${x0} ${y0}A${r1} ${r1} 0 ${l} 1 ${x1} ${y1}L${x2} ${y2}A${r0} ${r0} 0 ${l} 0 ${x3} ${y3}Z`};
+const EQ=Math.PI*2/3,BIG=Math.PI*2-2.8,SMALL=1.4;
+let sp=[EQ,EQ,EQ],tg=[EQ,EQ,EQ],ro=[R1,R1,R1],act=-1,raf=0,touch=false;
+const els=T.map((t,i)=>{
+  const a=document.createElementNS(NS,"a");a.setAttribute("href",t.u);a.setAttribute("aria-label",t.n);
+  const p=document.createElementNS(NS,"path");p.setAttribute("class","s");p.style.fill=`var(--${t.c})`;
+  const g=document.createElementNS(NS,"g");
+  g.innerHTML=`<text y="-2" font-size="46">${t.e}</text><text y="36" font-size="21" font-weight="700">${t.n}</text>`;
+  a.append(p,g);W.appendChild(a);
+  a.addEventListener("pointerdown",e=>touch=e.pointerType==="touch");
+  a.addEventListener("pointerenter",e=>{if(e.pointerType!=="touch")set(i)});
+  a.addEventListener("focus",()=>set(i));a.addEventListener("blur",()=>set(-1));
+  a.addEventListener("click",e=>{if(touch&&act!==i){e.preventDefault();set(i)}});
+  return{p,g}});
+const hub=document.createElementNS(NS,"circle");hub.setAttribute("class","hubc");hub.setAttribute("cx",C);hub.setAttribute("cy",C);hub.setAttribute("r",R0-8);W.appendChild(hub);
+W.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")set(-1)});
+function set(i){
+  act=i;tg=i<0?[EQ,EQ,EQ]:T.map((_,k)=>k===i?BIG:SMALL);
+  $("ht").textContent=i<0?"Tools":T[i].n;$("hd").textContent=i<0?"Choose a slice to see what it does.":T[i].d;go();
+}
+function frame(){
+  let moving=false,a=S0;const k=calm?1:.16;
+  T.forEach((t,i)=>{
+    const rt=i===act?R1+16:R1;
+    sp[i]+=(tg[i]-sp[i])*k;ro[i]+=(rt-ro[i])*k;
+    if(Math.abs(tg[i]-sp[i])>.001||Math.abs(rt-ro[i])>.1)moving=true;
+    const a0=a+.05,a1=a+sp[i]-.05,m=a+sp[i]/2,r=(R0+ro[i])/2+4;a+=sp[i];
+    els[i].p.setAttribute("d",arc(a0,a1,R0,ro[i]));
+    els[i].g.setAttribute("transform",`translate(${C+r*Math.cos(m)} ${C+r*Math.sin(m)})`);
+  });
+  raf=moving?requestAnimationFrame(frame):0;
+}
+function go(){if(!raf)raf=requestAnimationFrame(frame)}
+frame();
+</script></body></html>

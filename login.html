@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><script src="theme.js"></script><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Login or register</title>
+<link rel="stylesheet" href="common.css">
+<style>
+body{display:grid;place-items:center;padding:70px 16px 30px}
+.box{background:rgba(255,255,255,.78);backdrop-filter:blur(6px);border-radius:28px;padding:32px 28px;width:min(100%,420px)}
+.box h1{font-size:2.1rem;margin-bottom:4px}.box .sub{color:var(--muted);margin:0 0 20px}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--lilac);border-radius:999px;padding:4px;margin-bottom:20px}
+.seg i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--accent);border-radius:999px;transition:transform .35s cubic-bezier(.3,1.3,.5,1)}
+.seg.r i{transform:translateX(100%)}
+.seg button{position:relative;z-index:1;border:0;background:none;font:inherit;font-weight:500;padding:9px;cursor:pointer;color:var(--ink);transition:color .25s}
+.seg button.on{color:#fff}
+.msg{color:#b3261e;min-height:1.4em;margin:8px 0 0;font-size:15px}
+.cf-turnstile{margin:2px 0 12px}
+.ok{text-align:center}.ok .big{font-size:3rem}
+</style></head><body>
+<main class="box">
+  <h1>Welcome</h1><p class="sub" id="sub">Log in to use the tools.</p>
+  <div class="seg" id="seg" role="tablist"><i></i><button type="button" id="tl" class="on" role="tab">Login</button><button type="button" id="tr" role="tab">Register</button></div>
+  <form id="f">
+    <div id="reg" hidden>
+      <input id="nm" placeholder="Name" maxlength="60" autocomplete="name">
+      <input id="bd" type="date" min="1900-01-01" aria-label="Birthday" title="Birthday">
+    </div>
+    <input id="em" type="email" placeholder="Email" autocomplete="username" required>
+    <input id="pw" type="password" placeholder="Password (8+ characters)" minlength="8" autocomplete="current-password" required>
+    <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY"></div>
+    <button class="btn" id="go" style="width:100%">Log in</button>
+    <p class="msg" id="msg" role="alert"></p>
+  </form>
+  <div class="ok" id="sent" hidden><div class="big">📬</div><h2>Check your email</h2><p class="muted">We sent a confirmation link to <b id="sentTo"></b>. Click it to verify your account. You'll be signed in automatically.</p></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="auth.js"></script>
+<script>
+const q=new URLSearchParams(location.search),next=safeNext(q.get("next"));
+let reg=q.get("mode")==="register";
+const msg=t=>$("msg").textContent=t||"";
+function mode(r){
+  reg=r;$("seg").classList.toggle("r",r);$("tl").classList.toggle("on",!r);$("tr").classList.toggle("on",r);
+  $("reg").hidden=!r;$("nm").required=$("bd").required=r;
+  $("go").textContent=r?"Create account":"Log in";$("pw").autocomplete=r?"new-password":"current-password";
+  $("sub").textContent=r?"Create an account to use the tools.":"Log in to use the tools.";msg();
+}
+$("tl").onclick=()=>mode(false);$("tr").onclick=()=>mode(true);mode(reg);
+$("bd").max=new Date().toISOString().slice(0,10);
+
+// Link errors (expired confirmation link etc.)
+const h=new URLSearchParams(location.hash.slice(1));
+if(h.get("error_description"))msg(h.get("error_description").replace(/\+/g," "));
+
+// Already signed in, or just came back from the email link? Go where they wanted.
+sb.auth.getSession().then(({data})=>{if(data.session){mark();location.replace(next)}});
+
+$("f").onsubmit=async e=>{
+  e.preventDefault();msg();
+  const tk=window.turnstile?turnstile.getResponse():"";
+  if(!tk){msg("Please complete the check above.");return}
+  const email=$("em").value.trim(),password=$("pw").value;
+  $("go").disabled=true;let r;
+  if(reg){
+    r=await sb.auth.signUp({email,password,options:{data:{name:$("nm").value.trim(),birthday:$("bd").value},emailRedirectTo:location.origin+"/login?next="+encodeURIComponent(next),captchaToken:tk}});
+    if(!r.error&&!r.data.session){$("f").hidden=true;$("seg").hidden=true;$("sent").hidden=false;$("sentTo").textContent=email;return}
+  }else r=await sb.auth.signInWithPassword({email,password,options:{captchaToken:tk}});
+  $("go").disabled=false;
+  if(r.error){window.turnstile&&turnstile.reset();msg(r.error.message);return}
+  mark();location.replace(next);
+};
+</script></body></html>
