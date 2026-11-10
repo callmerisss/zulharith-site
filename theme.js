@@ -1,5 +1,8 @@
 /* Dark mode toggle + "Other" menu on every page. Add <script src="theme.js"></script> in each page's <head>. */
 (function(){
+  var HOME=/^\/(index(\.html)?)?$/.test(location.pathname);
+  var BK={"/tools":"/","/login":"/","/admin":"/","/adminmain":"/","/notegen":"/tools","/timetable":"/tools","/projects":"/tools"};
+  var PATH=location.pathname.replace(/\.html$/,"").replace(/\/$/,"")||"/";
   var KEY="theme",root=document.documentElement;
   function saved(){try{return localStorage.getItem(KEY)}catch(e){return null}}
   function current(){return saved()||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")}
@@ -52,6 +55,7 @@ D+"#moreMenu a{color:#ecebff}"+D+"#moreMenu a:hover,"+D+"#moreMenu a:focus-visib
 D+"#moreMenu a small{color:#a9a8c9}"+D+"#moreMenu hr{background:rgba(255,255,255,.16)}"+
 D+"#moreMenu a.lg{background:#7b6ff2;color:#fff}"+
 "@media (max-width:1100px){html #m.wrap{padding-top:66px}}"+
+"#fab a.fb{text-decoration:none}#backBtn:hover svg{transform:translateX(-3px)}"+
 "@media (prefers-reduced-motion:reduce){#fab *,#moreMenu{transition:none!important}}";
   var st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
 
@@ -67,6 +71,7 @@ D+"#moreMenu a.lg{background:#7b6ff2;color:#fff}"+
 '<hr><a class="lg" href="/login?next=/tools">Login / Register</a></div></div></div>'+
 '<button class="fb" id="themeBtn" type="button"><span class="t"></span><span class="i" aria-hidden="true"><svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button>';
     document.body.appendChild(f);
+    if(!HOME){f.querySelector("#more").outerHTML='<a class="fb" id="backBtn" href="'+(BK[PATH]||"/adminmain")+'" aria-label="Go back"><span class="t">Back</span><span class="i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></span></a>'}
     var b=document.getElementById("themeBtn"),mb=document.getElementById("moreBtn"),more=document.getElementById("more");
     function label(){
       var dark=root.getAttribute("data-theme")==="dark";
@@ -81,8 +86,8 @@ D+"#moreMenu a.lg{background:#7b6ff2;color:#fff}"+
       try{localStorage.setItem(KEY,next)}catch(e){}
       setTimeout(function(){root.classList.remove("theme-anim")},450);
     };
-    mb.onclick=function(e){e.stopPropagation();var o=more.classList.toggle("open");mb.setAttribute("aria-expanded",o)};
-    document.addEventListener("click",function(e){if(!more.contains(e.target)){more.classList.remove("open");mb.setAttribute("aria-expanded","false")}});
+    if(mb)mb.onclick=function(e){e.stopPropagation();var o=more.classList.toggle("open");mb.setAttribute("aria-expanded",o)};
+    document.addEventListener("click",function(e){if(more&&!more.contains(e.target)){more.classList.remove("open");mb.setAttribute("aria-expanded","false")}});
     addEventListener("storage",function(e){if(e.key===KEY&&e.newValue){apply(e.newValue);label()}});
   }
   if(document.body)build();else document.addEventListener("DOMContentLoaded",build);
