@@ -12,33 +12,51 @@ textarea{min-height:110px;resize:vertical}
 .btn.alt{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .btn.sm{padding:5px 14px;font-size:14px}
 .msg{color:#b3261e;min-height:1.4em;margin:8px 0 0;font-size:15px}
-body{display:grid;place-items:center;padding:20px}
+body{display:grid;place-items:center;padding:70px 20px 20px}
 .box{background:rgba(255,255,255,.75);backdrop-filter:blur(6px);border-radius:28px;padding:36px 30px;width:min(100%,400px)}
 h1{font-size:2.2rem;margin-bottom:6px}.sub{color:var(--muted);margin:0 0 22px}
 .back{display:block;text-align:center;margin-top:18px;color:var(--muted);font-size:15px}
+.cf-turnstile{margin:2px 0 12px}
 </style></head><body>
 <main class="box">
   <h1>Admin</h1><p class="sub">Sign in to open your notes.</p>
   <form id="f">
     <input id="email" type="email" placeholder="Email" autocomplete="username" required>
     <input id="pw" type="password" placeholder="Password" autocomplete="current-password" required>
+    <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY"></div>
     <button class="btn" id="go" style="width:100%">Log in</button>
     <p class="msg" id="msg" role="alert"></p>
   </form>
   <a class="back" href="/">← Back to my site</a>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
 const SUPABASE_URL="https://mesaszwdqcrzlpwnlhzf.supabase.co";
 const SUPABASE_KEY="sb_publishable_ufV3JHtv5IZXw3UqZlLLXw_Qqv_NnME";
+const ADMIN="zzzick123@gmail.com"; // only this email may use the admin pages
+const isAdmin=u=>((u&&u.email)||"").toLowerCase()===ADMIN;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const msg=document.getElementById("msg");
-sb.auth.getSession().then(({data})=>{if(data.session)location.replace("/adminmain")});
+// Already signed in? Admin goes to the dashboard, everyone else goes to the tools page.
+sb.auth.getSession().then(({data})=>{if(data.session)location.replace(isAdmin(data.session.user)?"/adminmain":"/tools")});
 document.getElementById("f").addEventListener("submit",async e=>{
   e.preventDefault();msg.textContent="";
+  const tk=window.turnstile?turnstile.getResponse():"";
+  if(!tk){msg.textContent="Please complete the check above.";return}
   const go=document.getElementById("go");go.disabled=true;go.textContent="Logging in…";
-  const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pw.value});
-  if(error){msg.textContent="Wrong email or password. Try again.";go.disabled=false;go.textContent="Log in";return}
+  const reset=()=>{go.disabled=false;go.textContent="Log in";window.turnstile&&turnstile.reset()};
+  const {data,error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pw.value,options:{captchaToken:tk}});
+  if(error){
+    console.warn("Login error:",error.message);
+    msg.textContent=/captcha/i.test(error.message)?"The human check failed. Try again.":/confirm/i.test(error.message)?"This account's email is not confirmed yet.":"Wrong email or password. Try again.";
+    reset();return;
+  }
+  if(!isAdmin(data.user)){ // a normal user: sign them out again and give the same generic message
+    await Promise.race([sb.auth.signOut({scope:"local"}),new Promise(r=>setTimeout(r,1500))]).catch(()=>{});
+    try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(x){}
+    msg.textContent="Wrong email or password. Try again.";reset();return;
+  }
   location.replace("/adminmain");
 });
 </script></body></html>
